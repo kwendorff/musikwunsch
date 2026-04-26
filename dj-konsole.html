@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJ Konsole – Musikwünsche</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #05080d;
+    --panel: #0a0d14;
+    --surface: #0f1320;
+    --border: rgba(255,255,255,0.06);
+    --accent: #c9a84c;
+    --text: #ddd8cc;
+    --muted: #5a6070;
+    --neu: #c9a84c;
+    --gespielt: #34d399;
+    --abgelehnt: #6b7280;
+    --del: #f87171;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .live-dot {
+    width: 8px; height: 8px;
+    background: var(--gespielt);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .live-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gespielt);
+  }
+
+  /* ── STATS BAR ── */
+  .stats {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-item {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-num.gold   { color: var(--neu); }
+  .stat-num.green  { color: var(--gespielt); }
+  .stat-num.gray   { color: var(--abgelehnt); }
+
+  .stat-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── FILTER ── */
+  .filter-bar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .filter-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── LIST ── */
+  .list {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── CARD ── */
+  .wish-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: border-color 0.2s;
+    animation: slideIn 0.25s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .wish-card.status-gespielt { border-color: rgba(52,211,153,0.2); }
+  .wish-card.status-abgelehnt { opacity: 0.45; }
+
+  .wish-card:hover { border-color: rgba(201,168,76,0.25); }
+
+  .wish-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--muted);
+    min-width: 28px;
+    text-align: right;
+    padding-top: 0.1rem;
+  }
+
+  .wish-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .wish-song {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.2rem;
+  }
+
+  .wish-msg {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .wish-time {
+    font-size: 0.68rem;
+    color: #2a3040;
+    margin-top: 0.3rem;
+    letter-spacing: 0.05em;
+  }
+
+  .wish-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    align-items: flex-start;
+  }
+
+  .action-btn {
+    padding: 0.35rem 0.6rem;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-play  { color: var(--gespielt); border-color: rgba(52,211,153,0.3); }
+  .btn-play:hover  { background: rgba(52,211,153,0.1); }
+
+  .btn-skip  { color: var(--muted); }
+  .btn-skip:hover  { color: #f87171; border-color: rgba(248,113,113,0.3); }
+
+  .btn-reset { color: var(--neu); border-color: rgba(201,168,76,0.3); }
+  .btn-reset:hover { background: rgba(201,168,76,0.1); }
+
+  .btn-del   { color: var(--del); border-color: rgba(248,113,113,0.2); }
+  .btn-del:hover   { background: rgba(248,113,113,0.08); }
+
+  /* Status badge */
+  .badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 1px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  .badge-gespielt { background: rgba(52,211,153,0.12); color: var(--gespielt); }
+  .badge-abgelehnt { background: rgba(107,114,128,0.15); color: var(--abgelehnt); }
+
+  /* Clear all button */
+  .toolbar {
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-clear-all {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.8rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .btn-clear-all:hover { color: var(--del); border-color: rgba(248,113,113,0.3); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">♪ DJ Konsole</div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <div class="live-label">Live</div>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-item">
+    <div class="stat-num gold" id="cntNeu">—</div>
+    <div class="stat-label">Neu</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num green" id="cntGespielt">—</div>
+    <div class="stat-label">Gespielt</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num gray" id="cntAbl">—</div>
+    <div class="stat-label">Übersprungen</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="cntAll" style="color:var(--text)">—</div>
+    <div class="stat-label">Gesamt</div>
+  </div>
+</div>
+
+<!-- Filter -->
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="setFilter('alle', this)">Alle</button>
+  <button class="filter-btn" onclick="setFilter('neu', this)">Neu</button>
+  <button class="filter-btn" onclick="setFilter('gespielt', this)">Gespielt</button>
+  <button class="filter-btn" onclick="setFilter('abgelehnt', this)">Übersprungen</button>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <button class="btn-clear-all" onclick="clearAll()">Alle löschen</button>
+</div>
+
+<!-- List -->
+<div class="list" id="wishList">
+  <div class="empty">Verbinde mit Firebase …</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue, update, remove, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // ⚙️ FIREBASE-KONFIGURATION – gleiche Daten wie Gästeseite
+  const firebaseConfig = {
+    apiKey: "AIzaSyCvHWXrQxneUKn_oRBb-Vmy1JGS7y7s4og",
+    authDomain: "musikwunsch-neutral.firebaseapp.com",
+    databaseURL: "https://musikwunsch-neutral-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "musikwunsch-neutral",
+    storageBucket: "musikwunsch-neutral.firebasestorage.app",
+    messagingSenderId: "957004814726",
+    appId: "1:957004814726:web:f3b1c3da39b3e1d39bf407"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  const wishRef = ref(db, 'musikwuensche');
+
+  let allData = {};
+  let currentFilter = 'alle';
+
+  // Realtime listener
+  onValue(query(wishRef, orderByChild('ts')), snap => {
+    allData = {};
+    if (snap.exists()) {
+      snap.forEach(child => {
+        allData[child.key] = { id: child.key, ...child.val() };
+      });
+    }
+    updateStats();
+    renderList();
+  });
+
+  function updateStats() {
+    const vals = Object.values(allData);
+    document.getElementById('cntNeu').textContent      = vals.filter(v => v.status === 'neu').length;
+    document.getElementById('cntGespielt').textContent = vals.filter(v => v.status === 'gespielt').length;
+    document.getElementById('cntAbl').textContent      = vals.filter(v => v.status === 'abgelehnt').length;
+    document.getElementById('cntAll').textContent      = vals.length;
+  }
+
+  function renderList() {
+    const list = document.getElementById('wishList');
+    const vals = Object.values(allData)
+      .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+      .filter(v => currentFilter === 'alle' || v.status === currentFilter);
+
+    if (!vals.length) {
+      list.innerHTML = `<div class="empty">${currentFilter === 'alle' ? 'Noch keine Wünsche.' : 'Keine Einträge in dieser Kategorie.'}</div>`;
+      return;
+    }
+
+    list.innerHTML = vals.map((w, i) => {
+      const time = w.ts ? new Date(w.ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '';
+      const badge = w.status !== 'neu'
+        ? `<span class="badge badge-${w.status}">${w.status === 'gespielt' ? '✓ Gespielt' : '– Skip'}</span>`
+        : '';
+      return `
+        <div class="wish-card status-${w.status}" id="card-${w.id}">
+          <div class="wish-num">${i + 1}</div>
+          <div class="wish-body">
+            <div class="wish-song">${esc(w.song)}${badge}</div>
+            ${w.msg ? `<div class="wish-msg">${esc(w.msg)}</div>` : ''}
+            ${time ? `<div class="wish-time">${time} Uhr</div>` : ''}
+          </div>
+          <div class="wish-actions">
+            ${w.status !== 'gespielt' ? `<button class="action-btn btn-play" onclick="setStatus('${w.id}','gespielt')">✓</button>` : ''}
+            ${w.status === 'neu' ? `<button class="action-btn btn-skip" onclick="setStatus('${w.id}','abgelehnt')">–</button>` : ''}
+            ${w.status !== 'neu' ? `<button class="action-btn btn-reset" onclick="setStatus('${w.id}','neu')">↺</button>` : ''}
+            <button class="action-btn btn-del" onclick="deleteWish('${w.id}')">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  window.setStatus = function(id, status) {
+    update(ref(db, `musikwuensche/${id}`), { status });
+  };
+
+  window.deleteWish = function(id) {
+    remove(ref(db, `musikwuensche/${id}`));
+  };
+
+  window.clearAll = function() {
+    if (!confirm('Wirklich alle Wünsche löschen?')) return;
+    remove(wishRef);
+  };
+
+  window.setFilter = function(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList();
+  };
+</script>
+
+</body>
+</html>

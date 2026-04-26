@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Musikwunsch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b10;
+    --surface: #0e1219;
+    --border: rgba(255,255,255,0.07);
+    --accent: #c9a84c;
+    --accent-dim: rgba(201,168,76,0.15);
+    --text: #e8e0d0;
+    --muted: #6b7280;
+    --success: #34d399;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Ambient background glow */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3rem 2.5rem 2.5rem;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  }
+
+  /* Top golden rule */
+  .card::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+    margin: 0 auto 2rem;
+  }
+
+  .headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 300;
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+  }
+
+  .field {
+    margin-bottom: 1.4rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+
+  input, textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    resize: none;
+  }
+
+  input:focus, textarea:focus {
+    border-color: rgba(201,168,76,0.5);
+    background: var(--accent-dim);
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: #3a4050;
+  }
+
+  textarea {
+    min-height: 90px;
+  }
+
+  .btn {
+    width: 100%;
+    margin-top: 0.8rem;
+    padding: 1rem;
+    background: var(--accent);
+    color: #080b10;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.99); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Success state */
+  .success-state {
+    display: none;
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .success-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .success-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--success);
+    margin-bottom: 0.5rem;
+  }
+
+  .success-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-again {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.7rem 1.5rem;
+    border-radius: 2px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-again:hover { border-color: var(--accent); color: var(--accent); }
+
+  .error-msg {
+    font-size: 0.78rem;
+    color: #f87171;
+    margin-top: 0.8rem;
+    text-align: center;
+    display: none;
+  }
+
+  /* Floating note */
+  .footer-note {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #2a3040;
+    margin-top: 2rem;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- FORM STATE -->
+  <div id="formState">
+    <div class="headline">Musikwunsch</div>
+    <div class="subtitle">Sende deinen Wunsch an die DJ's</div>
+
+    <div class="field">
+      <label>Titel / Interpret *</label>
+      <input type="text" id="song" placeholder="z. B. Sweet Caroline – Neil Diamond" maxlength="120">
+    </div>
+
+    <div class="field">
+      <label>Nachricht an die DJ's (nicht Pflicht)</label>
+      <textarea id="msg" placeholder="Optional – z. B. für Hochzeitstanz, Geburtstagskind …" maxlength="200"></textarea>
+    </div>
+
+    <button class="btn" id="sendBtn" onclick="sendRequest()">Wunsch absenden</button>
+    <div class="error-msg" id="errMsg">Bitte gib mindestens einen Titel oder Interpreten ein.</div>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="success-state" id="successState">
+    <div class="success-icon">♪</div>
+    <div class="success-text">Wunsch gesendet!</div>
+    <div class="success-sub">Das DJ hört deinen Wunsch.</div>
+    <button class="btn-again" onclick="reset()">Weiteren Wunsch senden</button>
+  </div>
+
+  <div class="footer-note">Powered by DJ · Echtzeit-Übertragung</div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // ⚙️ FIREBASE-KONFIGURATION – hier eigene Daten eintragen
+  const firebaseConfig = {
+    apiKey: "AIzaSyCvHWXrQxneUKn_oRBb-Vmy1JGS7y7s4og",
+    authDomain: "musikwunsch-neutral.firebaseapp.com",
+    databaseURL: "https://musikwunsch-neutral-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "musikwunsch-neutral",
+    storageBucket: "musikwunsch-neutral.firebasestorage.app",
+    messagingSenderId: "957004814726",
+    appId: "1:957004814726:web:f3b1c3da39b3e1d39bf407"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.sendRequest = async function() {
+    const songVal = document.getElementById('song').value.trim();
+    const msgVal  = document.getElementById('msg').value.trim();
+    const errMsg  = document.getElementById('errMsg');
+    const btn     = document.getElementById('sendBtn');
+
+    if (!songVal) {
+      errMsg.style.display = 'block';
+      return;
+    }
+    errMsg.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Wird gesendet …';
+
+    try {
+      await push(ref(db, 'musikwuensche'), {
+        song: songVal,
+        msg: msgVal || null,
+        ts: serverTimestamp(),
+        status: 'neu'  // 'neu' | 'gespielt' | 'abgelehnt'
+      });
+
+      document.getElementById('formState').style.display = 'none';
+      document.getElementById('successState').style.display = 'block';
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = 'Wunsch absenden';
+      errMsg.textContent = 'Fehler beim Senden. Bitte erneut versuchen.';
+      errMsg.style.display = 'block';
+      console.error(e);
+    }
+  };
+
+  window.reset = function() {
+    document.getElementById('song').value = '';
+    document.getElementById('msg').value = '';
+    document.getElementById('formState').style.display = 'block';
+    document.getElementById('successState').style.display = 'none';
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('sendBtn').textContent = 'Wunsch absenden';
+  };
+</script>
+
+</body>
+</html>
